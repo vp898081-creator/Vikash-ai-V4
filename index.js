@@ -91,16 +91,46 @@ async function wakeMode() {
     console.log("\n🤖 Haan Vikash, boliye...");
     speak("Haan Vikash, boliye");
 
-    const question = listenVoice();
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    if (!question) {
-      console.log("❌ Kuch samajh nahi aaya.");
-      continue;
+    let conversationActive = true;
+
+    while (conversationActive) {
+
+      const question = listenVoice();
+
+      if (!question) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+
+      console.log("\n🎤 Suna:", question);
+
+      const lowerQuestion = question.toLowerCase().trim();
+
+      if (
+        lowerQuestion.includes("so jao") ||
+        lowerQuestion.includes("सो जाओ") ||
+        lowerQuestion.includes("sleep") ||
+        lowerQuestion.includes("stop listening")
+      ) {
+
+        console.log("\n😴 Conversation band...");
+        speak("ठीक है, मैं फिर से Wake Mode में हूँ।");
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        conversationActive = false;
+        continue;
+      }
+
+      await processQuestion(question);
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log("\n🎤 अगला सवाल बोलिए...");
     }
 
-    await processQuestion(question);
-
-    console.log("\n🔄 Wapas Wake Mode...");
   }
 }
 
