@@ -2,7 +2,12 @@ require("dotenv").config();
 
 const readline = require("readline-sync");
 
-const { loadMemory, saveMemory } = require("./modules/memory");
+const {
+  loadMemory,
+  saveMemory,
+  addFact,
+  getFacts
+} = require("./modules/memory");
 const { handleCommand } = require("./modules/commands");
 const { askOpenRouter } = require("./modules/openrouter");
 const { addMessage } = require("./modules/chat");
