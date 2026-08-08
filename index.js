@@ -34,7 +34,10 @@ async function processQuestion(question) {
     process.exit(0);
   }
 
-  const commandReply = handleCommand(question, memory);
+  const commandReply = handleCommand(question, memory, {
+  addFact,
+  getFacts
+});
 
   if (commandReply) {
     saveMemory(memory);
