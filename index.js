@@ -6,7 +6,14 @@ const {
   loadMemory,
   saveMemory,
   addFact,
-  getFacts
+  getFacts,
+  removeFact,
+  searchMemory,
+  updateProfile,
+  addLike,
+  addDislike,
+  removeLike,
+  removeDislike
 } = require("./modules/memory");
 const { handleCommand } = require("./modules/commands");
 const { askOpenRouter } = require("./modules/openrouter");
@@ -36,7 +43,14 @@ async function processQuestion(question) {
 
   const commandReply = handleCommand(question, memory, {
   addFact,
-  getFacts
+  getFacts,
+  removeFact,
+  searchMemory,
+  updateProfile,
+  addLike,
+  addDislike,
+  removeLike,
+  removeDislike
 });
 
   if (commandReply) {
