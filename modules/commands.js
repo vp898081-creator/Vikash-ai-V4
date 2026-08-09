@@ -85,16 +85,19 @@ function handleCommand(input, memory, memoryTools = {}) {
   if (
     text === "meri umr kya hai" ||
     text === "meri umar kya hai" ||
+    text === "meri umra kya hai" ||
     text === "meri umr kya h" ||
     text === "meri umar kya h" ||
-    text === "मेरी उम्र क्या है"
+    text === "meri umra kya h" ||
+    text === "मेरी उम्र क्या है" ||
+    text === "मेरी उमर क्या है"
   ) {
     return memory.age
       ? `आपकी उम्र ${memory.age} है।`
       : "मुझे अभी आपकी उम्र नहीं पता।";
   }
 
-    // --------------------------------
+  // --------------------------------
   // उम्र सेव / update
   // --------------------------------
   if (
@@ -102,8 +105,7 @@ function handleCommand(input, memory, memoryTools = {}) {
     text.startsWith("meri umar ") ||
     text.startsWith("meri umra ") ||
     text.startsWith("मेरी उम्र ") ||
-    text.startsWith("मेरी उमर ") ||
-    text.startsWith("मेरी उम्रा ")
+    text.startsWith("मेरी उमर ")
   ) {
     let age;
 
@@ -115,19 +117,17 @@ function handleCommand(input, memory, memoryTools = {}) {
       age = raw.substring(10).trim();
     } else if (text.startsWith("मेरी उम्र ")) {
       age = raw.substring(9).trim();
-    } else if (text.startsWith("मेरी उमर ")) {
-      age = raw.substring(9).trim();
     } else {
-      age = raw.substring(10).trim();
+      age = raw.substring(9).trim();
     }
+
+    age = age
+      .replace(/\s+(hai|है)$/i, "")
+      .trim();
 
     if (!age) {
       return "आपकी उम्र क्या है?";
     }
-
-age = age
-  .replace(/\s+(hai|है)$/i, "")
-  .trim();	
 
     if (!updateProfile(memory, "age", age)) {
       return "मैं आपकी उम्र याद नहीं रख पाया।";
@@ -153,33 +153,6 @@ age = age
   }
 
   // --------------------------------
-// पसंद हटाना
-// --------------------------------
-if (
-  text.startsWith("pasand hatao ") ||
-  text.startsWith("pasand hata do ") ||
-  text.startsWith("meri pasand se hatao ") ||
-  text.startsWith("meri pasand se hata do ")
-) {
-  let like = raw
-    .replace(/^pasand\s+hatao\s+/i, "")
-    .replace(/^pasand\s+hata\s+do\s+/i, "")
-    .replace(/^meri\s+pasand\s+se\s+hatao\s+/i, "")
-    .replace(/^meri\s+pasand\s+se\s+hata\s+do\s+/i, "")
-    .trim();
-
-  if (!like) {
-    return "कौन सी पसंद हटानी है?";
-  }
-
-  const removed = removeLike(memory, like);
-
-  return removed.length
-    ? `ठीक है, मैंने ${removed.join(", ")} को आपकी पसंद से हटा दिया।`
-    : `मुझे आपकी पसंद में ${like} नहीं मिला।`;
-}
-
-  // --------------------------------
   // नापसंद पूछना
   // --------------------------------
   if (
@@ -194,6 +167,57 @@ if (
     }
 
     return `आपको ${memory.dislikes.join(", ")} पसंद नहीं है।`;
+  }
+
+  // --------------------------------
+  // Automatic Memory:
+  // "achha lagta hai"
+  // --------------------------------
+  if (
+    text.startsWith("mujhe ") &&
+    (
+      text.includes(" achha lagta hai") ||
+      text.includes(" accha lagta hai")
+    )
+  ) {
+    const like = raw
+      .replace(/^mujhe\s+/i, "")
+      .replace(/\s+(achha|accha)\s+lagta\s+hai.*$/i, "")
+      .trim();
+
+    if (!like) {
+      return "क्या चीज़ आपको अच्छी लगती है?";
+    }
+
+    const added = addLike(memory, like);
+
+    return added
+      ? `ठीक है, मैंने याद रख लिया कि आपको ${like} पसंद है।`
+      : `यह बात पहले से मेरी memory में है।`;
+  }
+
+  // --------------------------------
+  // Automatic Memory:
+  // "nahi pasand"
+  // --------------------------------
+  if (
+    text.startsWith("mujhe ") &&
+    text.includes(" nahi pasand")
+  ) {
+    const dislike = raw
+      .replace(/^mujhe\s+/i, "")
+      .replace(/\s+nahi\s+pasand.*$/i, "")
+      .trim();
+
+    if (!dislike) {
+      return "क्या चीज़ आपको पसंद नहीं है?";
+    }
+
+    const added = addDislike(memory, dislike);
+
+    return added
+      ? `ठीक है, मैंने याद रख लिया कि आपको ${dislike} पसंद नहीं है।`
+      : `यह बात पहले से मेरी memory में है।`;
   }
 
   // --------------------------------
@@ -247,6 +271,33 @@ if (
   }
 
   // --------------------------------
+  // पसंद हटाना
+  // --------------------------------
+  if (
+    text.startsWith("pasand hatao ") ||
+    text.startsWith("pasand hata do ") ||
+    text.startsWith("meri pasand se hatao ") ||
+    text.startsWith("meri pasand se hata do ")
+  ) {
+    let like = raw
+      .replace(/^pasand\s+hatao\s+/i, "")
+      .replace(/^pasand\s+hata\s+do\s+/i, "")
+      .replace(/^meri\s+pasand\s+se\s+hatao\s+/i, "")
+      .replace(/^meri\s+pasand\s+se\s+hata\s+do\s+/i, "")
+      .trim();
+
+    if (!like) {
+      return "कौन सी पसंद हटानी है?";
+    }
+
+    const removed = removeLike(memory, like);
+
+    return removed.length
+      ? `ठीक है, मैंने ${removed.join(", ")} को आपकी पसंद से हटा दिया।`
+      : `मुझे आपकी पसंद में ${like} नहीं मिला।`;
+  }
+
+  // --------------------------------
   // Smart fact save
   // --------------------------------
   if (
@@ -273,8 +324,10 @@ if (
       .replace(/^याद\s+रखना\s+/i, "")
       .trim();
 
-    fact = fact.replace(/^ki\s+/i, "").trim();
-    fact = fact.replace(/^कि\s+/i, "").trim();
+    fact = fact
+      .replace(/^ki\s+/i, "")
+      .replace(/^कि\s+/i, "")
+      .trim();
 
     if (!fact) {
       return "क्या याद रखना है?";
@@ -288,7 +341,7 @@ if (
   }
 
   // --------------------------------
-  // Smart facts पूछना
+  // Mere bare mein kya yaad hai
   // --------------------------------
   if (
     text === "mere bare mein kya yaad hai" ||
@@ -340,7 +393,7 @@ if (
     text.startsWith("memory mein ") ||
     text.startsWith("memory me ")
   ) {
-    let query = raw
+    const query = raw
       .replace(/^memory\s+search\s+/i, "")
       .replace(/^search\s+memory\s+/i, "")
       .replace(/^memory\s+mein\s+/i, "")
@@ -368,7 +421,7 @@ if (
     text.startsWith("memory bhool jao ") ||
     text.startsWith("याद भूल जाओ ")
   ) {
-    let query = raw
+    const query = raw
       .replace(/^memory\s+bhool\s+jao\s+/i, "")
       .replace(/^bhool\s+jao\s+/i, "")
       .replace(/^bhul\s+jao\s+/i, "")
